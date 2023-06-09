@@ -1,0 +1,5 @@
+version: "3.8"
+services:
+  deployments:
+    image: ghcr.io/dotscene-gmbh/mender/deployments:4.2.0
+    build: .

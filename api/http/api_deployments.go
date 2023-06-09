@@ -617,6 +617,7 @@ func (d *DeploymentsApiHandlers) newImageWithContext(
 	}
 
 	// parse multipart message
+
 	multipartUploadMsg, err := d.ParseMultipart(formReader)
 
 	if err != nil {

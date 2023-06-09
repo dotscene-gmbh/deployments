@@ -23,6 +23,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+  "bufio"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -351,6 +352,7 @@ func (d *Deployments) handleArtifact(ctx context.Context,
 
 	// create pipe
 	pR, pW := io.Pipe()
+  bufferedPW := bufio.NewWriterSize(pW, 100 << 20) 
 
 	// limit reader to the size provided with the upload message
 	lr := &utils.LimitedReader{
@@ -358,7 +360,7 @@ func (d *Deployments) handleArtifact(ctx context.Context,
 		N:          multipartUploadMsg.ArtifactSize + 1,
 		LimitError: ErrModelArtifactFileTooLarge,
 	}
-	tee := io.TeeReader(lr, pW)
+  tee := io.TeeReader(lr, bufferedPW)
 
 	uid, err := uuid.Parse(multipartUploadMsg.ArtifactID)
 	if err != nil {
@@ -440,6 +442,7 @@ func (d *Deployments) handleArtifact(ctx context.Context,
 		}
 		return artifactID, errors.Wrap(err, "Fail to store the metadata")
 	}
+
 
 	return artifactID, nil
 }

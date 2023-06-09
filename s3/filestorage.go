@@ -94,7 +94,7 @@ func NewSimpleStorageServiceStatic(
 	// NOTE: This size along with the 10000 part limit sets the ultimate
 	//       limit on the upload size.
 	maxImageSize := config.Config.GetInt64(dconfig.SettingAwsS3MaxImageSize)
-	partSize := int64(math.Max(5*mib, float64(((maxImageSize-1)/(10000*mib)+1)*mib)))
+	partSize := int64(math.Max(99*mib, float64(((maxImageSize-1)/(10000*mib)+1)*mib)))
 	// configuration
 	credentials := credentials.NewStaticCredentials(key, secret, token)
 	config := aws.NewConfig().WithCredentials(credentials).WithRegion(region)
@@ -359,17 +359,21 @@ func (s *SimpleStorageService) uploadMultipart(
 	// The following is loop is very similar to io.Copy except the
 	// destination is the s3 bucket.
 	for partNum++; partNum < maxPartNum; partNum++ {
+
 		// Read next chunk from stream (fill the whole buffer)
 		offset, eRead := fillBuffer(buf, artifact)
+
 		if offset > 0 {
 			r := bytes.NewReader(buf[:offset])
 			// Readjust upload parameters
 			uploadParams.Body = r
+
 			rspUpload, err = s.client.UploadPartWithContext(
 				ctx,
 				uploadParams,
 				requestOptions,
 			)
+
 			if err != nil {
 				break
 			}
